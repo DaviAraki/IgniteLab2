@@ -7,51 +7,20 @@ import {
 } from 'phosphor-react';
 
 import '@vime/core/themes/default.css';
-import { gql, useQuery } from '@apollo/client';
-
-const GET_LESSON_BY_SLUG_QUERY = gql`
-  query GetLessonBySlug($slug: String) {
-    lesson(where: { slug: $slug }) {
-      title
-      description
-      videoId
-      teacher {
-        bio
-        avatarURL
-        name
-      }
-    }
-  }
-`;
-
-interface GetLessonBySlugQueryResponse {
-  lesson: {
-    title: string;
-    description: string;
-    videoId: string;
-    teacher: {
-      bio: string;
-      avatarURL: string;
-      name: string;
-    };
-  };
-}
+import { useGetLessonBySlugQuery } from '../graphql/generated';
 
 interface VideoProps {
   lessonSlug: string;
 }
 
 export function Video({ lessonSlug }: VideoProps) {
-  const { data, loading } = useQuery<GetLessonBySlugQueryResponse>(
-    GET_LESSON_BY_SLUG_QUERY,
-    {
-      variables: {
-        slug: lessonSlug,
-      },
-    }
-  );
+  const { data, loading } = useGetLessonBySlugQuery({
+    variables: {
+      slug: lessonSlug,
+    },
+  });
 
-  if (!data || loading) {
+  if (!data || !data.lesson || loading) {
     return (
       <div className='flex-1'>
         <p>Loading...</p>
@@ -79,17 +48,17 @@ export function Video({ lessonSlug }: VideoProps) {
 
             <div className='flex item-center gap-4 mt-6'>
               <img
-                src={teacher.avatarURL}
+                src={teacher?.avatarURL}
                 alt=''
                 className='h-16 w-16 border-2 rounded-full border-blue-500'
               />
 
               <div className='leading-relaxed'>
                 <strong className='font-bold text-2xl block'>
-                  {teacher.name}
+                  {teacher?.name}
                 </strong>
                 <span className='text-gray-200 text-sm block'>
-                  {teacher.bio}
+                  {teacher?.bio}
                 </span>
               </div>
             </div>
